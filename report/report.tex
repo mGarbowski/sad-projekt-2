@@ -14,7 +14,7 @@
 \usepackage{xcolor}
 
 \geometry{margin=2.5cm}
-\graphicspath{{../src/problem_1/figures/}{../src/problem_2/figures/}}
+\graphicspath{{../src/problem_1/figures/}}
 
 \hypersetup{
     colorlinks=true,
@@ -166,167 +166,9 @@ Z punktu widzenia zastosowań praktycznych można sformułować następujący wn
 
 Wreszcie, niezależnie od użytego testu, wraz ze wzrostem $n$ wszystkie krzywe mocy zbiegają do poziomu istotności $\alpha = 0{,}05$. Oznacza to, że dla wystarczająco dużej liczby uśrednianych zmiennych żaden ze stosowanych testów nie potrafi już wykryć odchylenia $\bar{X}_n$ od rozkładu normalnego - rozkład ten staje się praktycznie nieodróżnialny od normalnego, co stanowi tezę Centralnego Twierdzenia Granicznego.
 
+
 \section{Problem 2 - odbiornik znanego sygnału}
 
-\subsection{Metoda rozwiązania problemu}
+TODO
 
-Zadanie polega na zaprojektowaniu algorytmu detekcji, który w odebranym sygnale $x(i)$, $i = 1, \dots, N$ rozpoznaje obecność ukrytego, ustalonego z góry kodu pseudoszumowego $s(i) \in \{-1, +1\}$ zatopionego w białym szumie gaussowskim $w(i) \sim \mathcal{N}(0, \sigma^2)$. Pomijając całą warstwę radiową (częstotliwość nośna, dobór anten, układy RF, synchronizacja) oraz przetwarzanie sygnału do postaci cyfrowej, ograniczamy się do dyskretnego problemu testowania dwóch prostych hipotez:
-\begin{align}
-    H_0 \!:& \quad x(i) = w(i), \\
-    H_1 \!:& \quad x(i) = A\,s(i) + w(i),
-\end{align}
-gdzie $A$ jest nieznaną, dodatnią amplitudą sygnału. Poziom istotności testu odpowiada prawdopodobieństwu fałszywego alarmu i powinien być bardzo niski - w analizie rozważano wartości $\alpha \in \{10^{-2}, 10^{-3}, 10^{-4}, 10^{-6}\}$.
-
-Optymalny test wynika bezpośrednio z lematu Neymana-Pearsona. Próbki $x(i)$ nie mają identycznego rozkładu, lecz są niezależne, a ich łączna funkcja wiarygodności pod każdą z hipotez ma postać:
-\begin{align}
-    L_0(\mathbf{x}) &= \prod_{i=1}^{N} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{x(i)^2}{2\sigma^2}\right), \\
-    L_1(\mathbf{x}; A) &= \prod_{i=1}^{N} \frac{1}{\sqrt{2\pi\sigma^2}} \exp\!\left(-\frac{(x(i) - A s(i))^2}{2\sigma^2}\right).
-\end{align}
-Iloraz wiarygodności po skróceniu wspólnych czynników i wykorzystaniu tożsamości $\sum_i s(i)^2 = N$ daje:
-\begin{equation}
-    \log \frac{L_1}{L_0} = \frac{A}{\sigma^2} \sum_{i=1}^{N} s(i) x(i) - \frac{A^2 N}{2\sigma^2}.
-\end{equation}
-Drugi człon nie zależy od danych, więc po zastosowaniu progowania na ilorazie wiarygodności decyzja sprowadza się do porównania pojedynczej statystyki
-\begin{equation}
-    T = \sum_{i=1}^{N} s(i)\,x(i)
-    \label{eq:T}
-\end{equation}
-z progiem $\tau$. Statystyka $T$ jest zatem statystyką dostateczną dla problemu detekcji, a dla każdego $A > 0$ uzyskany test jest jednostajnie najmocniejszy w klasie testów o ustalonym poziomie istotności. W praktyce statystyka ta odpowiada operacji korelacji sygnału odebranego ze znanym kodem, czyli klasycznemu filtrowi dopasowanemu (matched filter).
-
-Rozkład statystyki testowej jest pod obiema hipotezami gaussowski, ponieważ $T$ jest kombinacją liniową zmiennych normalnych. Bezpośrednie obliczenie wartości oczekiwanej i wariancji daje:
-\begin{align}
-    T \mid H_0 &\sim \mathcal{N}(0, \sigma^2 N), \\
-    T \mid H_1 &\sim \mathcal{N}(A N, \sigma^2 N).
-\end{align}
-Próg dobiera się tak, aby prawdopodobieństwo fałszywego alarmu wynosiło dokładnie $\alpha$:
-\begin{equation}
-    \tau = z_{1-\alpha} \, \sigma \sqrt{N},
-\end{equation}
-gdzie $z_{1-\alpha}$ to kwantyl rzędu $1-\alpha$ rozkładu $\mathcal{N}(0,1)$. Moc testu, czyli prawdopodobieństwo poprawnej detekcji, wyraża się wzorem:
-\begin{equation}
-    P_D = \Pr(T > \tau \mid H_1) = 1 - \Phi\!\left(z_{1-\alpha} - \frac{A\sqrt{N}}{\sigma}\right) = \Phi(d - z_{1-\alpha}),
-    \label{eq:power}
-\end{equation}
-gdzie $\Phi$ oznacza dystrybuantę rozkładu standardowego normalnego, a wielkość
-\begin{equation}
-    d = \frac{A\sqrt{N}}{\sigma}
-    \label{eq:d}
-\end{equation}
-nazywana będzie dalej \emph{efektywnym stosunkiem sygnału do szumu}. To kluczowy parametr układu - moc detekcji zależy od $A$, $\sigma$ i $N$ wyłącznie poprzez ich kombinację $d$. Wynika z tego natychmiast efekt zwany \emph{processing gain}: dwukrotne wydłużenie sygnału kompensuje obniżenie amplitudy o czynnik $\sqrt{2}$ albo wzrost odchylenia standardowego szumu o ten sam czynnik. Inaczej mówiąc, można wykryć dowolnie słaby sygnał, jeśli tylko dostatecznie długo można obserwować jego znaną strukturę.
-
-Symulacje Monte Carlo zrealizowano w języku Python z wykorzystaniem bibliotek \texttt{numpy} oraz \texttt{scipy.stats}. Dla każdego zestawu parametrów $(N, A, \sigma, \alpha)$ wylosowano kod $s$ ze stałym ziarnem generatora (rozłożenia $\pm 1$ z równym prawdopodobieństwem), a następnie wygenerowano po $50\,000$ niezależnych realizacji szumu pod obiema hipotezami. Empiryczne wartości prawdopodobieństw $P_D$ i $P_{FA}$ obliczono jako frakcję przekroczeń progu. Wszystkie generatory liczb pseudolosowych zainicjalizowano ziarnami pochodnymi od stałej $\mathrm{SEED} = 42$, co zapewnia powtarzalność wyników.
-
-\subsection{Wyniki}
-
-\subsubsection{Rozkład statystyki testu i weryfikacja teorii}
-
-Punktem wyjścia analizy jest sprawdzenie, czy rozkład statystyki testowej $T$ pod obiema hipotezami rzeczywiście pokrywa się z formułami teoretycznymi. Rysunek~\ref{fig:test_stat} przedstawia histogramy gęstości $T$ uzyskane z $200\,000$ realizacji dla wybranego zestawu parametrów ($N = 256$, $A = 0{,}3$, $\sigma = 1$). Pod $H_0$ histogram jest symetryczny wokół zera o rozrzucie $\sigma\sqrt{N} \approx 16$, pod $H_1$ jego środek przesuwa się o $AN = 76{,}8$, lecz rozrzut pozostaje identyczny. Naniesione krzywe teoretyczne $\mathcal{N}(0, \sigma^2 N)$ oraz $\mathcal{N}(AN, \sigma^2 N)$ pokrywają histogramy z dokładnością nieodróżnialną gołym okiem. Czerwona pionowa linia oznacza próg $\tau$ dla $\alpha = 10^{-3}$, który oddziela praktycznie cały rozkład pod $H_0$ od większości masy rozkładu pod $H_1$, ilustrując mechanizm detekcji.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{test_statistic.png}
-    \caption{Rozkład statystyki testu $T = \sum_i s(i) x(i)$ pod hipotezami $H_0$ i $H_1$ wraz z teoretycznymi krzywymi gęstości oraz progiem decyzyjnym przy $\alpha = 10^{-3}$.}
-    \label{fig:test_stat}
-\end{figure}
-
-Tabela~\ref{tab:verification} zestawia teoretyczne i empiryczne wartości mocy detekcji oraz empiryczny rozmiar testu dla siedmiu reprezentatywnych konfiguracji $(N, A, \alpha)$. We wszystkich przypadkach wartości empiryczne odbiegają od teoretycznych o nie więcej niż dwie cyfry znaczące, co w pełni mieści się w błędzie Monte Carlo dla $50\,000$ symulacji. Podobnie empiryczne prawdopodobieństwo fałszywego alarmu pozostaje praktycznie identyczne z nominalnym $\alpha$, co potwierdza poprawność wyboru progu.
-
-\begin{table}[H]
-    \centering
-    \caption{Weryfikacja teoretycznych wzorów na moc detekcji i poziom fałszywego alarmu - empiryczne wartości z $50\,000$ symulacji Monte Carlo dla wybranych konfiguracji parametrów ($\sigma = 1$).}
-    \label{tab:verification}
-    \input{../src/problem_2/tables/verification.tex}
-\end{table}
-
-\subsubsection{Wpływ amplitudy, długości sygnału i poziomu szumu}
-
-Wzór~\eqref{eq:power} przewiduje, że moc testu zależy od trzech parametrów $A$, $N$, $\sigma$ jedynie poprzez efektywny stosunek $d = A\sqrt{N}/\sigma$. Aby zilustrować rolę każdego z nich osobno, kolejne trzy rysunki pokazują przekroje tej zależności, w których jeden parametr jest zmieniany, a pozostałe pozostają stałe.
-
-Rysunek~\ref{fig:power_A} przedstawia moc detekcji w funkcji amplitudy $A$ przy ustalonym $\sigma = 1$ i $\alpha = 10^{-3}$, dla pięciu wartości $N \in \{16, 64, 256, 1024, 4096\}$. Wszystkie krzywe mają charakterystyczny kształt sigmoidalny, gwałtownie przechodząc od $P_D \approx \alpha$ dla małych $A$ do $P_D \approx 1$ dla dużych. Punkt przegięcia każdej krzywej (mocy 0{,}5) przypada na $A \approx z_{1-\alpha} \sigma / \sqrt{N}$, czyli skaluje się jak $1/\sqrt{N}$. Praktyczna konsekwencja jest taka, że czterokrotne wydłużenie sygnału obniża wymaganą amplitudę detekcji dwukrotnie.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{power_vs_amplitude.png}
-    \caption{Moc detekcji w funkcji amplitudy sygnału $A$ dla różnych długości $N$ przy stałym $\sigma = 1$, $\alpha = 10^{-3}$.}
-    \label{fig:power_A}
-\end{figure}
-
-Rysunek~\ref{fig:power_N} pokazuje to samo zjawisko z innej perspektywy - moc w funkcji długości sygnału $N$ przy ustalonych wartościach stosunku $A/\sigma \in \{0{,}05; 0{,}1; 0{,}2; 0{,}5; 1{,}0\}$. Krzywe są symetrycznie przesunięte względem siebie w skali logarytmicznej osi $N$: aby uzyskać tę samą moc detekcji, dwukrotne zmniejszenie amplitudy wymaga czterokrotnego wydłużenia sygnału. Dla $A = 0{,}05\sigma$ osiągnięcie mocy 0{,}9 wymaga $N$ rzędu $5000$ próbek, podczas gdy dla $A = \sigma$ wystarczy zaledwie kilkanaście próbek.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{power_vs_n.png}
-    \caption{Moc detekcji w funkcji długości sygnału $N$ dla różnych stosunków $A/\sigma$ przy $\alpha = 10^{-3}$.}
-    \label{fig:power_N}
-\end{figure}
-
-Trzecim parametrem analizowanym osobno jest odchylenie standardowe szumu $\sigma$. Rysunek~\ref{fig:power_sigma} pokazuje moc detekcji jako funkcję $\sigma$ dla pięciu kombinacji $(A, N)$. Zgodnie z formułą~\eqref{eq:power} każda krzywa monotonicznie maleje wraz ze wzrostem poziomu szumu, dążąc do wartości $\alpha$ dla bardzo dużego $\sigma$. Kombinacje, które dają identyczny iloczyn $A\sqrt{N}$, prowadzą do krzywych o tym samym kształcie, jedynie przesuniętych wzdłuż osi $\sigma$. Konfiguracje $A = 0{,}3$, $N = 1024$ oraz $A = 0{,}1$, $N = 4096$ na rysunku wyglądają prawie identycznie, gdyż obie odpowiadają tej samej wartości $A\sqrt{N} \approx 9{,}6$. Dla pierwszej z nich detektor utrzymuje moc 0{,}9 aż do $\sigma \approx 2{,}5$, podczas gdy konfiguracja $A = 0{,}3$, $N = 256$ traci tę zdolność już dla $\sigma \approx 1{,}25$.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{power_vs_sigma.png}
-    \caption{Moc detekcji w funkcji odchylenia standardowego szumu $\sigma$ dla różnych kombinacji $(A, N)$ przy $\alpha = 10^{-3}$.}
-    \label{fig:power_sigma}
-\end{figure}
-
-\subsubsection{Wpływ poziomu istotności i uniwersalne skalowanie}
-
-Wymóg bardzo niskiego prawdopodobieństwa fałszywego alarmu, podany wprost w treści zadania, znacząco zmienia wymagania na sygnał. Rysunek~\ref{fig:power_alpha} pokazuje moc detekcji w funkcji $\alpha$ przy ustalonym $N = 256$ dla czterech wartości amplitudy. Dla każdej z nich obniżenie $\alpha$ o cztery rzędy wielkości (z $10^{-2}$ do $10^{-6}$) wymaga proporcjonalnie większego marginesu w efektywnym SNR. Przy $A = 0{,}5$ ($d = 8$) detektor utrzymuje moc bliską 1 nawet dla $\alpha = 10^{-8}$, natomiast przy $A = 0{,}1$ ($d = 1{,}6$) już dla $\alpha = 10^{-3}$ moc spada poniżej 30\%.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{power_vs_alpha.png}
-    \caption{Moc detekcji w funkcji prawdopodobieństwa fałszywego alarmu $\alpha$ dla różnych amplitud sygnału przy $N = 256$, $\sigma = 1$.}
-    \label{fig:power_alpha}
-\end{figure}
-
-Trzy poprzednie rysunki można uznać za różne projekcje jednej fundamentalnej zależności. Rysunek~\ref{fig:gain} przedstawia tę zależność wprost - moc detekcji jako funkcję efektywnego SNR $d = A\sqrt{N}/\sigma$ dla czterech poziomów istotności. Każda krzywa jest przesuniętą kopią dystrybuanty rozkładu standardowego normalnego $\Phi(d - z_{1-\alpha})$, a wszystkie kombinacje $(A, N, \sigma)$ dające tę samą wartość $d$ leżą dokładnie na tej krzywej. Praktyczne progi detekcji są łatwo odczytywalne z wykresu - osiągnięcie mocy 0{,}9 wymaga $d \approx 4{,}1$ dla $\alpha = 10^{-3}$ oraz $d \approx 6{,}0$ dla $\alpha = 10^{-6}$.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{processing_gain.png}
-    \caption{Uniwersalna krzywa mocy detekcji jako funkcja efektywnego stosunku sygnału do szumu $d = A\sqrt{N}/\sigma$ dla różnych poziomów istotności.}
-    \label{fig:gain}
-\end{figure}
-
-Uzupełnieniem analizy są krzywe ROC (rysunek~\ref{fig:roc}), które dla pięciu wartości efektywnego SNR $d \in \{0{,}5;\, 1;\, 2;\, 3;\, 4\}$ pokazują pełen zakres możliwych kompromisów między prawdopodobieństwem detekcji a prawdopodobieństwem fałszywego alarmu. Dla $d = 0{,}5$ detektor pracuje niewiele lepiej od losowego, natomiast dla $d = 4$ krzywa jest tak blisko lewego górnego rogu wykresu, że przy $P_{FA} = 10^{-3}$ daje już $P_D > 0{,}97$, a przy $P_{FA} = 10^{-6}$ wciąż przekracza $0{,}75$.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{roc.png}
-    \caption{Krzywe ROC dla pięciu wartości efektywnego stosunku sygnału do szumu $d = A\sqrt{N}/\sigma$.}
-    \label{fig:roc}
-\end{figure}
-
-\subsubsection{Detekcja sygnału bardzo słabego $A \ll \sigma$}
-
-Najbardziej praktyczny aspekt tego zadania - detekcja sygnału o amplitudzie znacznie mniejszej od poziomu szumu - wynika bezpośrednio z formuły~\eqref{eq:d}. Jeśli ustalić docelową moc detekcji, to wymagana długość sygnału skaluje się jak $N \propto (\sigma/A)^2$. Rysunek~\ref{fig:weak} pokazuje krzywe mocy w funkcji $N$ dla czterech wartości amplitudy słabego sygnału w przedziale od $A = 0{,}01\sigma$ do $A = 0{,}3\sigma$. Liczby w legendzie podają długość sygnału potrzebną do osiągnięcia mocy 0{,}5 przy $\alpha = 10^{-3}$ - przy $A = 0{,}3\sigma$ wystarczy $N \approx 107$, przy $A = 0{,}1\sigma$ trzeba $N \approx 955$, przy $A = 0{,}03\sigma$ już ponad dziesięć tysięcy próbek, a przy $A = 0{,}01\sigma$ blisko sto tysięcy. Kwadratowe skalowanie tej liczby z odwrotnością stosunku $A/\sigma$ jest dobrze widoczne na osi logarytmicznej jako stała odległość między krzywymi.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{weak_signal.png}
-    \caption{Detekcja sygnału słabego $A \ll \sigma$ - moc w funkcji długości sygnału $N$ dla czterech amplitud w zakresie $0{,}01\sigma$ do $0{,}3\sigma$ przy $\alpha = 10^{-3}$.}
-    \label{fig:weak}
-\end{figure}
-
-Z punktu widzenia projektu systemu detekcji oznacza to, że nawet amplituda dwóch rzędów wielkości mniejsza od odchylenia szumu jest fundamentalnie wykrywalna - cena pozostaje jedynie w postaci czasu obserwacji, który rośnie kwadratowo wraz ze spadkiem amplitudy.
-
-\subsection{Interpretacja wyników i wnioski}
-
-Wszystkie uzyskane wyniki są wewnętrznie spójne i bezpośrednio wynikają z jednego centralnego wzoru~\eqref{eq:power}. Ich łączna interpretacja pozwala sformułować kilka praktycznych obserwacji.
-
-Po pierwsze, optymalny detektor sygnału o znanej strukturze polega na jego skorelowaniu z odebranym sygnałem - jest to bezpośrednia konsekwencja lematu Neymana-Pearsona, a nie heurystyka. Statystyka $T = \sum_i s(i)\,x(i)$ jest sumą $N$ niezależnych zmiennych gaussowskich, dlatego ma rozkład normalny pod każdą z hipotez i pozwala na ścisłą, analityczną kontrolę poziomu fałszywego alarmu poprzez wybór progu $\tau = z_{1-\alpha}\sigma\sqrt{N}$.
-
-Po drugie, kluczową miarą jakości detekcji jest pojedyncza wielkość, efektywny stosunek sygnału do szumu $d = A\sqrt{N}/\sigma$, łącząca wszystkie trzy parametry wymienione w treści zadania. Trzy oddzielne rysunki (\ref{fig:power_A}, \ref{fig:power_N} i \ref{fig:power_sigma}) różnią się jedynie wyborem osi poziomej, lecz każda krzywa na każdym z nich odpowiada określonej wartości $d$ - to wyjaśnia, dlaczego wszystkie projekcje składają się w jedną uniwersalną krzywą na rysunku~\ref{fig:gain}. Z tej obserwacji wynika praktyczna zasada projektowa: niedostatek w jednym parametrze można zawsze zrekompensować nadmiarem w innym, według reguły $A^2 N / \sigma^2 = \mathrm{const}$.
-
-Po trzecie, detekcja sygnału znacznie słabszego od szumu nie napotyka żadnej fundamentalnej bariery - jak pokazuje rysunek~\ref{fig:weak}, nawet przy $A = 0{,}01\sigma$ wystarczająco długi sygnał pozwala uzyskać moc detekcji bliską jedności. Cena, jaką trzeba zapłacić, to kwadratowy wzrost długości sygnału względem odwrotności amplitudy. To właśnie dzięki tej zasadzie pseudoszumowy kod o długości $N$ rzędu kilku tysięcy próbek pozostaje praktycznie niewykrywalny dla osoby trzeciej, która nie zna $s(i)$, lecz jest pewnie wykrywany przez odbiorcę dysponującego dopasowanym filtrem.
-
-Po czwarte, wymóg bardzo niskiego prawdopodobieństwa fałszywego alarmu (rysunek~\ref{fig:power_alpha}) zwiększa konieczny SNR jedynie logarytmicznie, ponieważ kwantyl $z_{1-\alpha}$ rośnie bardzo wolno wraz ze spadkiem $\alpha$. Przejście z $\alpha = 10^{-3}$ ($z_{1-\alpha} \approx 3{,}09$) do $\alpha = 10^{-6}$ ($z_{1-\alpha} \approx 4{,}75$) zwiększa wymagany efektywny SNR o niespełna dwa, co zwykle jest cenowo dostępne przez umiarkowane wydłużenie sygnału.
-
-\subsection{Koncepcja systemu telekomunikacyjnego}
-
-Sformułowany detektor stanowi w istocie odbiornik jednego bitu informacji - obecność sygnału alarmowego można utożsamić z bitem "1", brak alarmu z bitem "0". Ustalenie wartości krytycznej progu sprowadza się wtedy do problemu optymalizacji decyzji binarnej. W klasycznym podejściu Neymana-Pearsona, użytym powyżej, próg dobiera się tak, aby utrzymać zadany maksymalny koszt fałszywego alarmu, co odpowiada minimalizacji prawdopodobieństwa pominięcia sygnału przy ograniczeniu na $P_{FA}$. W podejściu bayesowskim, jeśli znane są prawdopodobieństwa apriori obu bitów $\pi_0$ i $\pi_1$ oraz koszty błędów obu rodzajów $c_{10}$ i $c_{01}$, optymalny próg minimalizuje średni oczekiwany koszt i wynosi $\tau^* = \sigma^2 / A \cdot \log\!\left(\pi_0 c_{10} / (\pi_1 c_{01})\right) + AN/2$. W symetrycznym przypadku równych prawdopodobieństw i kosztów ($\pi_0 = \pi_1$, $c_{10} = c_{01}$) wzór upraszcza się do $\tau^* = AN/2$, czyli środka między oczekiwanymi wartościami $T$ pod obiema hipotezami - jest to klasyczne kryterium maksymalnego prawdopodobieństwa a posteriori.
-
-Transmisja wielu bitów jednocześnie jest możliwa na kilka komplementarnych sposobów. Najprostszym jest sekwencyjne nadawanie - każdy bit kodowany przez osobne wystąpienie tego samego sygnału $s(i)$ lub jego inwersji ($+s$ dla "1", $-s$ dla "0"), co odpowiada schematowi modulacji BPSK z rozproszeniem widma. Alternatywnie można wprowadzić zestaw $M$ wzajemnie ortogonalnych kodów $s_1, \dots, s_M$ (np. kody Walsha-Hadamarda lub Golda) i jednocześnie nadawać wszystkie $M$ bitów jako sumę $\sum_k b_k s_k$, gdzie $b_k \in \{-1, +1\}$ koduje $k$-ty bit. Odbiornik dekoduje każdy bit niezależnie, licząc korelację $\sum_i s_k(i)\,x(i)$, ponieważ ortogonalność kodów zapewnia, że pozostałe składowe sumują się do zera w wartości oczekiwanej. Jest to ogólna idea systemu CDMA (Code Division Multiple Access), w którym wielu nadawców korzysta z tej samej szerokości pasma, lecz każdy używa innego, ortogonalnego kodu i odbiorcy potrafią je niezależnie rozdzielić.
-
-\end{document}
+\end{document}

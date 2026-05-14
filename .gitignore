@@ -33,7 +33,9 @@ uv.lock
 
 # Allow committed figures and report PDFs
 !src/**/figures/*.png
+!drafts/**/figures/*.png
 !report/*.pdf
+!drafts/*.pdf
 !docs/*.pdf
 
 # Data files

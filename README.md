@@ -15,6 +15,10 @@ Druga część projektu z przedmiotu Statystyka w Analizie Danych (SAD), Wydzia�
 ├── report/                   raport LaTeX i pdf
 │   ├── report.tex
 │   └── report.pdf
+├── drafts/                   wczesne wersje, nieużywane w finalnym raporcie
+│   ├── problem_2/            wczesna implementacja Problemu 2
+│   ├── report.tex            pełna wersja raportu z wczesną realizacją Problemu 2
+│   └── report.pdf
 └── src/
     ├── problem_1/            CTG - testy zgodności rozkładu średniej
     │   ├── main.py
