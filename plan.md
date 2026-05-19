@@ -109,3 +109,7 @@ W rzeczywistym zastosowaniu byłoby to zapewne powiązane z wielkością pakietu
 
 Przez "trudny do wykrycia przez obcych" rozumiem niski stosunek $A/\sigma^2$ (tajny sygnał gdy jest przesyłany to zlewa się z szumem).
 Wtedy aby umożliwić poprawne działanie (niskie $\alpha$, wysokie $1-\beta$) musimy przyjąć odpowiednio duże $N$.
+
+TODO Kontekst telekomunnikacji - symetryczne traktowanie H0 i H1, próg w 0, minimalizacja sumarycznej stopy błędów (bit error rate)
+TODO zdjęcie kartki z wyprowadzeniami albo torchę bardziej dokładne niż teraz w PDF
+TODO symulacje - krzywa mocy testu teoretyczna vs symulacja (parametr snr)
