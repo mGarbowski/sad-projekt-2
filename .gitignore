@@ -1,2 +1,43 @@
-.idea
-.vscode
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+.python-version
+
+# uv
+uv.lock
+
+# macOS
+.DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Output files
+*.html
+*.docx
+*.zip
+
+# Default: ignore binary outputs except the ones we want to track
+*.pdf
+*.png
+
+# Allow committed figures and report PDFs
+!src/**/figures/*.png
+!drafts/**/figures/*.png
+!report/*.pdf
+!drafts/*.pdf
+!docs/*.pdf
+
+# Data files
+*.csv
+*.xlsx
