@@ -14,7 +14,7 @@
 \usepackage{xcolor}
 
 \geometry{margin=2.5cm}
-\graphicspath{{../src/problem_1/figures/}}
+\graphicspath{{../src/problem_1/figures/}{../src/problem_2/figures/}}
 
 \hypersetup{
     colorlinks=true,
@@ -48,7 +48,7 @@
     \begin{flushright}
         \large
         \textit{Autorzy:}\\[0.4cm]
-        Mikołaj Garbowski, nr albumu XXXXXX\\
+        Mikołaj Garbowski, nr albumu 325157\\
         Bartłomiej Dmitruk, nr albumu 324911\\
     \end{flushright}
 
@@ -169,6 +169,205 @@ Wreszcie, niezależnie od użytego testu, wraz ze wzrostem $n$ wszystkie krzywe 
 
 \section{Problem 2 - odbiornik znanego sygnału}
 
-TODO
+\subsection{Zadanie, założenia}
 
-\end{document}
+Zadanie dotyczy projektowania algorytmu do wykrycia obecności tajnego kodu w szumie. Jego szczegóły są następujące:
+\begin{itemize}
+    \item Jest ustalony tajny kod $s_i \in \{-1, 1\}$ o długości $N$, gdzie $i \in \{1, 2, \ldots, N\}$
+    \item Przesyłamy tajny kod ukryty w szumie gaussowskim.
+    \item Szum $w_i \sim N(0, \sigma^2)$
+    \item Sygnał $x_i$
+    \item Cel: zaprojektować algorytm do wykrycia obecności tajnego kodu w sygnale
+    \item Problem równoważny testowaniu hipotez:
+    \begin{itemize}
+        \item $H_0: x_i = w_i$, wtedy $x_i \sim \mathcal{N}(0, \sigma^2)$
+        \item $H_1: x_i = A s_i + w_i$, wtedy $x_i \sim \mathcal{N}(A s_i, \sigma^2)$
+    \end{itemize}
+    \item Parametry:
+    \begin{itemize}
+        \item $N$ --- długość kodu i sygnału
+        \item $\sigma^2$ --- wariancja szumu
+        \item $A$ --- amplituda tajnego kodu
+    \end{itemize}
+    \item $x_i$ traktujemy jako próbę losową; statystykę testową stanowi logarytm ilorazu wiarygodności
+    \item Kluczowe wielkości:
+    \begin{itemize}
+        \item $\alpha$ --- poziom istotności, czyli prawdopodobieństwo fałszywego alarmu (wykrywamy tajny kod, gdy nie jest przesyłany)
+        \item $1-\beta$ --- moc testu, czyli prawdopodobieństwo wykrycia tajnego kodu, gdy jest faktycznie przesyłany
+    \end{itemize}
+\end{itemize}
+
+\subsection{Statystyka testowa}
+
+Dla uproszczenia obliczeń stosujemy logarytm ilorazu wiarygodności zamiast samego ilorazu wiarygodności:
+
+$$T = \ln \left( \frac{L_{x_i | H_1}}{L_{x_i | H_0}} \right) = \ln(L_{x_i | H_1}) - \ln(L_{x_i | H_0}) = l_{x_i | H_1} - l_{x_i | H_0}$$
+
+Składniki sumy:
+
+$$
+l_{x_i | H_0} =
+\ln \left( \prod_{i=1}^N \frac{1}{\sqrt{2 \pi \sigma^2}} \exp \left( \frac{-x_i^2}{2 \sigma^2} \right) \right) =
+N \ln\left(\frac{1}{\sqrt{2 \pi \sigma^2}}\right) + \left(-\frac{1}{2\sigma^2}\right) \sum_{i=1}^N x_i^2
+$$
+
+$$
+l_{x_i | H_1} =
+\ln \left( \prod_{i=1}^N \frac{1}{\sqrt{2 \pi \sigma^2}} \exp \left( \frac{-(x_i - A s_i)^2}{2 \sigma^2} \right) \right) =
+N \ln\left(\frac{1}{\sqrt{2 \pi \sigma^2}}\right) + \left(-\frac{1}{2\sigma^2}\right) \sum_{i=1}^N (x_i-As_i)^2
+$$
+
+Podstawiając do $T$ (wykorzystuję $s_i^2 = 1$):
+
+$$
+T = \left(-\frac{1}{2\sigma^2}\right) \sum_{i=1}^N (x_i^2 - 2 A x_i s_i + A^2 s_i^2 - x_i^2) = \left(-\frac{1}{2\sigma^2}\right) \left( NA^2 - 2A \sum_{i=1}^N x_i s_i \right)
+$$
+
+$$
+T = -\frac{NA^2}{2\sigma^2} + \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i
+$$
+
+Duża wartość ($T \geq t_c$) świadczy na korzyść $H_1$, natomiast mała wartość ($T < t_c$) na korzyść $H_0$.
+
+\subsection{Rozkład statystyki testowej}
+
+Statystyka testowa $T$ ma postać
+
+$$T = \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i -\frac{NA^2}{2\sigma^2} = aY + b, \quad \text{gdzie} \quad Y = \sum_{i=1}^N x_i s_i$$
+
+Dla uproszczenia analizy najpierw rozpatrujemy rozkład $Y$.
+
+\subsubsection{Rozkład $Y$}
+
+Zmienna $Y$ jest kombinacją liniową niezależnych zmiennych losowych $x_i$ o rozkładzie normalnym, zatem sama ma rozkład normalny.
+
+\paragraph{Rozkład $Y$ pod $H_0$}
+
+Przy $H_0: x_i = w_i \sim \mathcal{N}(0, \sigma^2)$ mamy:
+$$Y | H_0 = \sum_{i=1}^N w_i s_i$$
+$$\mathbb{E}[Y | H_0] = 0, \quad \mathbb{V}[Y | H_0] = N \sigma^2$$
+$$Y | H_0 \sim \mathcal{N}(0, N\sigma^2)$$
+
+\paragraph{Rozkład $Y$ pod $H_1$}
+
+Przy $H_1: x_i = As_i + w_i$ oraz $s_i \in \{-1, 1\} \Rightarrow s_i^2=1$:
+$$Y | H_1 = \sum_{i=1}^N (As_i + w_i)s_i = AN + \sum_{i=1}^N s_i w_i$$
+$$\mathbb{E}[Y | H_1] = AN, \quad \mathbb{V}[Y | H_1] = N \sigma^2$$
+$$Y | H_1 \sim \mathcal{N}(AN, N \sigma^2)$$
+
+\subsubsection{Rozkład $T$}
+
+Na podstawie rozkładu $Y$ oraz transformacji $T = aY + b$ otrzymujemy:
+
+$$T | H_0 \sim \mathcal{N} \left( -\frac{A^2N}{2 \sigma^2}, \frac{A^2N}{\sigma^2} \right)$$
+
+$$T | H_1 \sim \mathcal{N} \left( \frac{A^2N}{2 \sigma^2}, \frac{A^2N}{\sigma^2} \right)$$
+
+\subsection{Poziom istotności i wartość krytyczna}
+
+Przy ustalonym poziomie istotności $\alpha$, wartość krytyczna $t_c$ spełnia warunek:
+
+$$P(T > t_c | H_0) = \alpha$$
+
+co daje
+
+$$t_c = F^{-1}_{T|H_0}(1-\alpha) = -\frac{A^2N}{2\sigma^2} + \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha)$$
+
+\subsection{Moc testu}
+
+Korzystając z wyprowadzonego rozkładu $T$ i wzoru na $t_c$, można analitycznie wyrazić moc testu $1-\beta$, czyli prawdopodobieństwo wykrycia tajnego kodu, gdy faktycznie jest przesyłany:
+
+$$1-\beta = P(T \geq t_c | H_1) = 1-F_{T|H_1}(t_c) = 1-\Phi \left( \frac{t_c- \frac{A^2N}{2\sigma^2}}{\frac{A\sqrt{N}}{\sigma}} \right)$$
+
+Po podstawieniu wyrażenia na $t_c$:
+
+$$1-\beta = 1 - \Phi \left( \Phi^{-1}(1-\alpha) - \frac{A\sqrt{N}}{\sigma} \right)$$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{t-reasonable.png}
+    \caption{Rozkład statystyki testowej dla parametrów, w których hipotezy są dobrze rozdzielne.}
+    \label{fig:t-reasonable}
+\end{figure}
+
+\subsection{Symulacje}
+
+\begin{itemize}
+    \item Wykonane w notatniku Jupyter
+    \item Weryfikuję poprawność wyprowadzeń symulując sygnały zawierające losowe szumy i wylosowane tajne kody
+    \item Dla każdego przykładu obliczam wartość statystyki testowej i porównuję z wartością krytyczną
+    \item Moc testu to stosunek liczby poprawnych wykryć tajnego kodu do liczby wszystkich przykładów
+    \item Wykreślam krzywą mocy testu w zależności od stosunku $\frac{A^2N}{\sigma^2}$
+    \item Powtarzam dla różnych poziomów istotności $\alpha$
+    \item Jak widać na wykresach, wyniki są zgodne ze wzorem teoretycznym
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{snr_0.01.png}
+    \caption{Moc testu w zależności od SNR dla $\alpha = 0.01$.}
+    \label{fig:snr-0p01}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{snr_0.001.png}
+    \caption{Moc testu w zależności od SNR dla $\alpha = 0.001$.}
+    \label{fig:snr-0p001}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{snr_0.0001.png}
+    \caption{Moc testu w zależności od SNR dla $\alpha = 0.0001$.}
+    \label{fig:snr-0p0001}
+\end{figure}
+
+\subsection{Moc testu przy słabym sygnale ($A \ll \sigma^2$)}
+
+Moc testu zależy od wartości $\frac{A\sqrt{N}}{\sigma}$. Zatem przy $A \ll \sigma^2$ możemy zwiększyć moc testu zwiększając $N$ (długość tajnego kodu i całego sygnału).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{t-close.png}
+    \caption{Przypadek trudny: $A \ll \sigma^2$.}
+    \label{fig:t-close}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{t-far.png}
+    \caption{Przypadek łatwiejszy: $A \ll \sigma^2$ ale znacznie dłuższy sygnał.}
+    \label{fig:t-far}
+\end{figure}
+
+\subsection{Koncepcja systemu alarmowego}
+\begin{itemize}
+\item Wymaga uzgodnienia tajnego kodu między nadawcą i odbiorcą sygnału, można wykorzystać np. protokół wymiany klucza Diffiego-Hellmana
+\item Założenia
+    \begin{itemize}
+        \item sygnał ma być trudny do wykrycia przez obcych
+        \item prawdopodobieństwo fałszywego alarmu ma być niskie
+    \end{itemize}
+\end{itemize}
+
+
+Dla uproszczenia rozważań przyjmijmy, że odbiorca w stałych oknach czasowych analizuje sygnał (pakiet) $x_1, \ldots, x_N$ (tzn. analizuje $x_1, \ldots, x_N$ odebrane w chwili/oknie $t_1, t_2,\ldots$).
+
+$\alpha$ określa prawdopodobieństwo fałszywego alarmu dla jednego pakietu. Przy dobieraniu wartości tego parametru należy uwzględnić częstotliwość wysyłania pakietów (1000 dziennie, 1000000 dziennie?).
+W rzeczywistym zastosowaniu byłoby to zapewne powiązane z wielkością pakietu $N$. Przy stałej przepływności kanału, większe $N$ oznacza mniejszą częstotliwość wysyłania pakietów.
+
+Przez "trudny do wykrycia przez obcych" rozumiem niski stosunek $A/\sigma^2$ (tajny sygnał gdy jest przesyłany to zlewa się z szumem).
+Wtedy aby umożliwić poprawne działanie (niskie $\alpha$, wysokie $1-\beta$) musimy przyjąć odpowiednio duże $N$ jak zilustrowano na wykresach powyżej.
+
+Wartość $\frac{A^2N}{\sigma^2}$ można interpretować jako stosunek sygnału do szumu (SNR).
+
+\subsection{Koncepcja systemu telekomunikacyjnego}
+
+Obecność lub nieobecność kodu możemy traktować jako przesłanie jednego bitu informacji (0 - brak kodu, 1 - obecność kodu).
+
+W takiej sytuacji chcemy zminimalizować sumaryczną stopę błędów (bit error rate), czyli obie sytuacje (kod obecny / nieobecny) traktujemy symetrycznie.
+Rozkład statystyki testowej pod $H_0$ i $H_1$ jest symetryczny względem zera, najlepszym wyborem progu jest $t_c = 0$.
+
+
+\end{document}
