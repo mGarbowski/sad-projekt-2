@@ -65,7 +65,11 @@ $$
 T = -\frac{NA^2}{2\sigma^2} + \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i
 $$
 
-Duża wartość ($T \ge t_c$) - świadczy na korzyść $H_1$, mała wartość ($T < t_c$) - na korzyść $H_0$
+Duża wartość ($T \ge t_c$) - świadczy na korzyść $H_1$, mała wartość ($T < t_c$) - na korzyść $H_0$.
+
+Taka statystyka testowa wychodzi z ilorazu wiarygodności, dodatkowo daje się intuicyjnie zinterpretować.
+Człon $\sum_{i=1}^N x_i s_i$ to iloczyn skalarny sygnału $x$ i tajnego kodu $s$.
+Iloczyn skalarny jest miarą podobieństwa, więc (z dokładnością do czynników stałych) większe podobieństwo - większa wartość T - większe przekonanie o prawdziwości $H_1$, że sygnał zawiera tajny kod.
 
 ## Rozkład statystyki testowej
 
@@ -109,6 +113,14 @@ co daje
 
 $$t_c = F^{-1}_{T|H_0}(1-\alpha) = -\frac{A^2N}{2\sigma^2} + \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha)$$
 
+### Uproszczona postać testu
+
+W porównaniu $T > t_c$ występują wspólne człony, więc postać testu można uprościć:
+
+$$T > t_c \iff \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i -\frac{A^2N}{2\sigma^2} > \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha) -\frac{A^2N}{2\sigma^2}$$
+$$\iff \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i > \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha)$$
+$$\iff \sum_{i=1}^N x_is_i > \sigma \sqrt{N} \cdot \Phi^{-1}(1-\alpha)$$
+
 ## Moc testu
 Korzystając z wyprowadzonego rozkładu $T$ i wyprowadzenia $t_c$ możemy analitycznie wyrazić moc testu $1-\beta$ (p-stwo wykrycia tajnego kodu, gdy faktycznie jest przesyłany)
 
@@ -116,7 +128,7 @@ $$1-\beta = P(T \ge t_c | H_1) = 1-F_{T|H_1}(t_c) = 1-\Phi \left( \frac{t_c- \fr
 $$= 1-\Phi \left( \frac{-\frac{A^2N}{2\sigma^2} + \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha) - \frac{A^2N}{2\sigma^2}}{\frac{A\sqrt{N}}{\sigma}} \right)$$
 $$1-\beta = 1 - \Phi \left( \Phi^{-1}(1-\alpha) - \frac{A\sqrt{N}}{\sigma} \right)$$
 
-![Rozkład statystyki testowej](./t-reasonable.png)
+![Rozkład statystyki testowej](./figures/t-reasonable.png)
 
 ## Symulacje
 * Wykonane w notatniku Jupyter
@@ -127,20 +139,20 @@ $$1-\beta = 1 - \Phi \left( \Phi^{-1}(1-\alpha) - \frac{A\sqrt{N}}{\sigma} \righ
 * Powtarzam dla różnych poziomów istotności $\alpha$
 * Jak widać na wykresach, wyniki są zgodne ze wzorem teoretycznym
 
-![](./snr_0.01.png)
+![](./figures/snr_0.01.png)
 
-![](./snr_0.001.png)
+![](./figures/snr_0.001.png)
 
-![](./snr_0.0001.png)
+![](./figures/snr_0.0001.png)
 
 ## Moc testu przy $A \ll \sigma^2$
 
 Moc testu zależy od wartości $\frac{A\sqrt{N}}{\sigma}$. Zatem przy $A \ll \sigma^2$ możemy zwiększyć moc testu zwiększając $N$ (długość tajnego kodu i całego sygnału).
 
 
-![Trudny przypadek $A \ll \sigma^2$](./t-close.png)
+![Trudny przypadek $A \ll \sigma^2$](./figures/t-close.png)
 
-![Łatwiejszy przypadek $A \ll \sigma^2$ ale znacznie dłuższy sygnał](./t-far.png)
+![Łatwiejszy przypadek $A \ll \sigma^2$ ale znacznie dłuższy sygnał](./figures/t-far.png)
 
 
 ## Koncepcja systemu alarmowego

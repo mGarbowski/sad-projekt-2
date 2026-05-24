@@ -229,6 +229,11 @@ $$
 
 Duża wartość ($T \geq t_c$) świadczy na korzyść $H_1$, natomiast mała wartość ($T < t_c$) na korzyść $H_0$.
 
+Taka statystyka testowa wychodzi z ilorazu wiarygodności, dodatkowo daje się intuicyjnie zinterpretować.
+Człon $\sum_{i=1}^N x_i s_i$ to iloczyn skalarny sygnału $x$ i tajnego kodu $s$.
+Iloczyn skalarny jest miarą podobieństwa, więc (z dokładnością do czynników stałych) większe podobieństwo - większa wartość T - większe przekonanie o prawdziwości $H_1$, że sygnał zawiera tajny kod.
+
+
 \subsection{Rozkład statystyki testowej}
 
 Statystyka testowa $T$ ma postać
@@ -273,14 +278,20 @@ co daje
 
 $$t_c = F^{-1}_{T|H_0}(1-\alpha) = -\frac{A^2N}{2\sigma^2} + \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha)$$
 
+\paragraph{Uproszczona postać testu}
+
+W porównaniu $T > t_c$ występują wspólne człony, więc postać testu można uprościć:
+
+$$T > t_c \iff \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i -\frac{A^2N}{2\sigma^2} > \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha) -\frac{A^2N}{2\sigma^2}$$
+$$\iff \frac{A}{\sigma^2} \sum_{i=1}^N x_is_i > \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha)$$
+$$\iff \sum_{i=1}^N x_is_i > \sigma \sqrt{N} \cdot \Phi^{-1}(1-\alpha)$$
+
 \subsection{Moc testu}
 
 Korzystając z wyprowadzonego rozkładu $T$ i wzoru na $t_c$, można analitycznie wyrazić moc testu $1-\beta$, czyli prawdopodobieństwo wykrycia tajnego kodu, gdy faktycznie jest przesyłany:
 
-$$1-\beta = P(T \geq t_c | H_1) = 1-F_{T|H_1}(t_c) = 1-\Phi \left( \frac{t_c- \frac{A^2N}{2\sigma^2}}{\frac{A\sqrt{N}}{\sigma}} \right)$$
-
-Po podstawieniu wyrażenia na $t_c$:
-
+$$1-\beta = P(T \ge t_c | H_1) = 1-F_{T|H_1}(t_c) = 1-\Phi \left( \frac{t_c- \frac{A^2N}{2\sigma^2}}{\frac{A\sqrt{N}}{\sigma}} \right)$$
+$$= 1-\Phi \left( \frac{-\frac{A^2N}{2\sigma^2} + \frac{A\sqrt{N}}{\sigma} \Phi^{-1}(1-\alpha) - \frac{A^2N}{2\sigma^2}}{\frac{A\sqrt{N}}{\sigma}} \right)$$
 $$1-\beta = 1 - \Phi \left( \Phi^{-1}(1-\alpha) - \frac{A\sqrt{N}}{\sigma} \right)$$
 
 \begin{figure}[H]
