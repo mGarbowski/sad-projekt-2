@@ -370,48 +370,6 @@ def save_moments_table_tex(results: MomentResults, filename: str) -> None:
     (TABLES_DIR / filename).write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def print_power_table(results: PowerResults, h0_true_results: PowerResults) -> None:
-    print(f"\n{'='*78}")
-    print(f"Moc testów normalności (P(odrzucenie H0 | H0 fałszywe)), α = {ALPHA}")
-    print(f"Rozkład bazowy: Exp(1), K = {K}, symulacji = {N_SIMULATIONS}")
-    print(f"{'='*78}")
-    print(f"{'n':>5} | {'KS':>8} | {'Shapiro-Wilk':>14} | {'D Agostino':>12}")
-    print("-" * 78)
-    for i, n in enumerate(results.n_values):
-        ks = results.powers["ks"][i]
-        sw = results.powers["sw"][i]
-        ag = results.powers["ag"][i]
-        print(f"{n:>5} | {ks:>8.4f} | {sw:>14.4f} | {ag:>12.4f}")
-
-    print(f"\n{'='*78}")
-    print("Empiryczny błąd I rodzaju (dane z N(0,1) jako weryfikacja)")
-    print(f"{'='*78}")
-    print(f"{'n':>5} | {'KS':>8} | {'Shapiro-Wilk':>14} | {'D Agostino':>12}")
-    print("-" * 78)
-    for i, n in enumerate(h0_true_results.n_values):
-        ks = h0_true_results.powers["ks"][i]
-        sw = h0_true_results.powers["sw"][i]
-        ag = h0_true_results.powers["ag"][i]
-        print(f"{n:>5} | {ks:>8.4f} | {sw:>14.4f} | {ag:>12.4f}")
-
-
-def print_moments_table(results: MomentResults) -> None:
-    print(f"\n{'='*78}")
-    print(f"Skośność i kurtoza nadmiarowa $\\bar X_n$ (rozkład bazowy Exp(1))")
-    print(f"Liczba prób na n: {N_MOMENT_SAMPLES}")
-    print(f"{'='*78}")
-    print(f"{'n':>5} | {'skew emp':>10} | {'skew teor':>10} | {'kurt emp':>10} | {'kurt teor':>10}")
-    print("-" * 78)
-    for i, n in enumerate(results.n_values):
-        print(
-            f"{n:>5} | "
-            f"{results.empirical_skewness[i]:>10.4f} | "
-            f"{results.theoretical_skewness[i]:>10.4f} | "
-            f"{results.empirical_kurtosis[i]:>10.4f} | "
-            f"{results.theoretical_kurtosis[i]:>10.4f}"
-        )
-
-
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -437,9 +395,6 @@ def main() -> None:
 
     save_power_table_tex(power_results, h0_results, "power.tex")
     save_moments_table_tex(moment_results, "moments.tex")
-
-    print_power_table(power_results, h0_results)
-    print_moments_table(moment_results)
 
     print(f"\nWygenerowano wykresy w {OUTPUT_DIR.resolve()}")
     print(f"Tabele LaTeX w {TABLES_DIR.resolve()}")
