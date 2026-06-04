@@ -4,7 +4,7 @@ Druga część projektu z przedmiotu Statystyka w Analizie Danych (SAD), Wydzia�
 
 ## Autorzy
 
-- Mikołaj Garbowski
+- Mikołaj Garbowski, nr albumu 325157
 - Bartłomiej Dmitruk, nr albumu 324911
 
 ## Struktura repozytorium
